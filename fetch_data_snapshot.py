@@ -22,9 +22,18 @@ def main():
         df.columns = df.columns.get_level_values(0)
 
     os.makedirs('data', exist_ok=True)
-    out_path = f"data/raw_{ticker.lower()}_{start.replace('-', '')}_{end.replace('-', '')}.csv"
-    df.to_csv(out_path)
-    print(f"Saved snapshot: {out_path} ({len(df)} rows)")
+    # Build deterministic filename (defensive casting to string)
+    start_str = str(start)
+    end_str = str(end)
+    start_compact = start_str.replace('-', '')
+    end_compact = end_str.replace('-', '')
+    out_path = f"data/raw_{ticker.lower()}_{start_compact}_{end_compact}.csv"
+    try:
+        df.to_csv(out_path)
+        print(f"Saved snapshot: {out_path} ({len(df)} rows)")
+    except Exception as e:
+        print(f"ERROR: Failed to write CSV -> {e}")
+        return
     print("Suggested: compute checksum -> certutil -hashfile " + out_path + " SHA256")
 
 if __name__ == '__main__':

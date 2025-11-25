@@ -20,9 +20,10 @@ This checklist ensures the repository is complete, reproducible, and academicall
 ### 2. Reproducibility
 - [ ] Python version recorded (e.g. `python --version` in appendix)
 - [ ] Dependency lock file: `requirements_locked.txt` (create with `pip freeze > requirements_locked.txt`)
-- [ ] Optional raw data snapshot: `data/raw_tsla_2018_2024.csv` (use `fetch_data_snapshot.py`)
+- [ ] Optional raw data snapshot: `data/raw_tsla_20180101_20241231.csv` (use `fetch_data_snapshot.py`)
 - [ ] Random seeds fixed (`random_state=42` in all models + SMOTE)
 - [ ] No hidden state or environment variables required
+- [ ] Raw data snapshot SHA256 checksum recorded: `0A9BC9B8F6E284E2A4A83373ED0C28680473C57F1815CFA8747077D5605A2EB4`
 
 ### 3. Verification
 - [ ] All tests pass: `pytest -vv` screenshot/log
