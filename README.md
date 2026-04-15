@@ -1,54 +1,75 @@
-# 🚀 Stock Direction Prediction System
+# 📈 Stock Market Prediction Using Long Short-Term Memory (LSTM) Networks
 
 [![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![TensorFlow](https://img.shields.io/badge/TensorFlow-2.13+-orange.svg)](https://www.tensorflow.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.0+-red.svg)](https://streamlit.io/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-**Final Year Project • Machine Learning Ensemble for Stock Market Prediction**
+**Final Year Project • Meerut Institute of Engineering and Technology (MIET)**
+**Department of Data Science**
 
-A comprehensive machine learning system that predicts next-day stock price direction using an ensemble of Random Forest, Gradient Boosting, and XGBoost models.
+---
 
-![Demo](outputs/final_evaluation_comprehensive.png)
+## 📄 Abstract
 
-## ✨ Features
+Stabilizations of stock market prices vary rapidly and the market is unpredictable and hard to forecast the prices; therefore, the need of robust time-varying models like the LSTM. To enhance the quality of predictions, this study uses a number of financial features to feed the model with more information and richer features. It performs the required preprocessing, including data cleaning, data normalization and the generation of time windows to make sure that the dataset is prepared well to be trained in the LSTM architecture. A stacked LSTM network is then trained to know both the short-term and long-term changes in the price in the market. The model performance is measured by RMSE, MAE and R² in order to obtain clear and precise measurement of performance in terms of prediction accuracy. The results indicate that LSTM is better than traditional models like ARIMA and linear regression because it is more appropriate in predicting stocks in a stock market.
 
-- 🎯 **51.9% Directional Accuracy** - Outperforms naive baseline (51.3%) and random (50%)
-- 📊 **29 Technical Indicators** - RSI, MACD, Bollinger Bands, volume, momentum, gaps
-- 🔮 **Ensemble Learning** - Weighted voting from 3 optimized models
-- 📈 **Interactive Dashboard** - Beautiful Streamlit UI with real-time predictions
-- 📉 **Comprehensive Charts** - Candlestick, technical indicators, feature importance
-- 🎓 **Publication-Ready Results** - Academic-quality evaluation and documentation
+**Index Terms** — Stock Prediction, Long Short-Term Memory (LSTM), Deep Learning, Financial Data Analysis, Python Programming, Machine Learning Techniques.
 
-## 🏆 Model Performance
+## 👥 Authors
 
-| Model | Accuracy | AUC-ROC |
-|-------|----------|---------|
-| Random Forest | 50.73% | 0.5203 |
-| Gradient Boosting | 51.60% | 0.5216 |
-| XGBoost | 51.02% | 0.5332 |
-| **Ensemble** | **51.90%** | **0.5282** |
+| Name | Role | Email |
+|------|------|-------|
+| Arpash Singh | Student, Dept. of Data Science | arpash.singh.cseds.2022@miet.ac.in |
+| Dhruv Rathi | Student, Dept. of Data Science | dhruv.rathi.cseds.2022@miet.ac.in |
+| Hardik Kapil | Student, Dept. of Data Science | hardik.kapil.cseds.2022@miet.ac.in |
+| Mr. Hemant Kumar Baranval | Guide, Asst. Professor | hemant.baranval@miet.ac.in |
 
-### Key Metrics
-- **Precision:** 0.5288
-- **Recall:** 0.5739
-### 1. Train Models
-```bash
-python train_final.py
+## 🏗️ Project Structure
+
 ```
-This will:
-...
-### 2. Evaluate Performance
-```bash
-python evaluate_final.py
+Stock-Price-Prediction/
+├── config.yaml                    # Configuration (ticker, LSTM params)
+├── requirements.txt               # Python dependencies
+├── train.py                       # Main training entry point
+├── evaluate.py                    # Main evaluation entry point
+├── fetch_data_snapshot.py         # Data snapshot for reproducibility
+│
+├── stock_predictor/               # Core Python package
+│   ├── __init__.py
+│   ├── data_loader.py             # Data Collection (Section III.A)
+│   ├── preprocessing.py           # Data Preprocessing (Section III.B)
+│   ├── lstm_model.py              # LSTM Architecture (Section III.C)
+│   ├── lstm_train.py              # Model Training (Section III.D)
+│   ├── lstm_evaluate.py           # Performance Evaluation (Section III.E)
+│   └── logging_utils.py           # Logging utility
+│
+├── app/
+│   └── app.py                     # Streamlit Web Dashboard
+│
+├── data/
+│   ├── raw/                       # Raw OHLCV data
+│   └── processed/                 # Processed sequences
+│
+├── models/
+│   ├── lstm_model.keras           # Trained LSTM model
+│   └── scaler.pkl                 # MinMaxScaler
+│
+├── outputs/
+│   ├── predictions.csv            # Actual vs Predicted prices
+│   ├── metrics.json               # RMSE, MAE, R²
+│   ├── training_history.json      # Epoch-by-epoch loss
+│   └── plots/                     # Evaluation charts (300 DPI)
+│       ├── actual_vs_predicted.png
+│       ├── training_loss.png
+│       ├── scatter_plot.png
+│       ├── error_distribution.png
+│       ├── residuals.png
+│       └── comprehensive_evaluation.png
+│
+├── tests/                         # Unit tests
+├── README.md                      # This file
+└── PROJECT_SUMMARY.md             # Quick summary
 ```
-Generates:
-...
-### 3. Run Web Application
-```bash
-streamlit run app_final.py
-```
-Opens browser with interactive dashboard at `http://localhost:8501`
-- **Improvement over Baseline:** +0.58 percentage points
 
 ## 🛠️ Installation
 
@@ -69,230 +90,122 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-### 4. (No external AI setup required)
-All features run locally using published technical indicators only.
+> **Note:** TensorFlow (~500MB) is required for LSTM model training.
 
 ## 🚀 Quick Start
 
-### Train Models
+### Step 1: Train the LSTM Model
 ```bash
-python train_final.py
+python train.py
 ```
 This will:
-- Download Tesla (TSLA) data from 2018-2024
-- Engineer 29 technical features
-- Train 3 models with SMOTE balancing
-- Save trained models (`.pkl` files)
+- Download NSE stock data (Reliance Industries) from 2018-2024
+- Apply MinMaxScaler normalization
+- Create 60-day sliding window sequences
+- Train a Stacked LSTM (2 layers × 50 units, dropout 0.2)
+- Save the trained model and scaler
+
+### Step 2: Evaluate Performance
 ```bash
-python evaluate_final.py
+python evaluate.py
 ```
-Generates:
-- `final_evaluation_comprehensive.png` - Publication-quality charts
-- `feature_importance.csv` - Feature rankings
-- Research paper summary in console
+This generates:
+- **RMSE, MAE, R²** metrics
+- **Publication-quality plots** (Actual vs Predicted, Loss Curves, Scatter Plot, etc.)
+- All outputs saved to `outputs/` directory
 
-### Run Web Application
+### Step 3: Launch Dashboard
 ```bash
-streamlit run app_final.py
+streamlit run app/app.py
 ```
-Opens browser with interactive dashboard at `http://localhost:8501`
-
-## 📊 Project Structure
-
-```
-Stock-Price-Prediction/
-├── train_final.py               # Main training script
-├── evaluate_final.py            # Comprehensive evaluation
-├── app_final.py                 # Streamlit web application
-├── requirements.txt             # Python dependencies
-├── models/                      # Saved model artifacts
-│   ├── final_rf.pkl
-│   ├── final_gb.pkl
-│   ├── final_xgb.pkl
-│   ├── final_scaler.pkl
-│   ├── final_features.pkl
-│   └── final_weights.pkl
-├── outputs/                     # Evaluation & analysis artifacts
-│   ├── final_predictions.csv
-│   ├── feature_importance.csv
-│   └── final_evaluation_comprehensive.png
-├── PROJECT_SUMMARY.md           # Summary document
-└── README.md
-```
+Opens an interactive dashboard at `http://localhost:8501` with:
+- Live market data visualization
+- LSTM predictions overlay
+- Performance metrics with gauges
+- Training history charts
+- Model architecture details
 
 ## 🔬 Methodology
 
-### Data
-- **Ticker:** Tesla (TSLA)
-- **Period:** 2018-2024 (1,711 trading days)
-- **Split:** 80% training, 20% testing (chronological)
-- **Target:** Binary classification (1=UP, 0=DOWN)
+### III.A — Data Collection
+Historical stock data of NSE (Reliance Industries — RELIANCE.NS) is collected using the Yahoo Finance API. Past close prices, trading volumes, and OHLC data capture detailed market behavior and trends over time (2018–2024).
 
-### Feature Engineering (29 Features)
-1. **Price-based:** Returns, log returns, gaps
-2. **Momentum:** 3, 5, 10, 14-day momentum
-3. **Technical Indicators:** RSI, MACD, Bollinger Bands
-4. **Volume Analysis:** Volume ratios, spikes
-5. **Volatility:** 10-day and 30-day standard deviation
-6. **Patterns:** Consecutive ups/downs, near high/low
+### III.B — Data Preprocessing
+- **Missing Values:** Forward-fill + remaining NaN removal
+- **Normalization:** MinMaxScaler to [0, 1] range
+- **Sequence Creation:** 60-day sliding windows for LSTM input
+- **Split:** 80% training, 20% testing (chronological, no look-ahead bias)
 
-### Models
-- **Random Forest:** 500 trees, max_depth=12, balanced weights
-- **Gradient Boosting:** 300 estimators, learning_rate=0.05
-- **XGBoost:** 300 estimators, optimized hyperparameters
-- **Ensemble:** Weighted voting based on validation accuracy
+### III.C — LSTM Model Architecture
+```
+Input (60 timesteps × 1 feature)
+    → LSTM Layer 1 (50 units, return_sequences=True)
+    → Dropout (0.2)
+    → LSTM Layer 2 (50 units, return_sequences=False)
+    → Dropout (0.2)
+    → Dense (1 neuron — price output)
+```
+**Optimizer:** Adam | **Loss:** Mean Squared Error (MSE)
 
-### Training Techniques
-- **SMOTE:** Synthetic data generation for class balance
-- **Robust Scaling:** Outlier-resistant feature normalization
-- **Chronological Split:** No look-ahead bias
-- **Hyperparameter Tuning:** Grid search optimization
+### III.D — Model Training
+- Adam optimizer with MSE loss
+- 80/20 chronological train-test split
+- Multi-epoch sequential training with validation tracking
+- Training history saved for loss curve analysis
 
-## 📈 Usage Examples
+### III.E — Performance Evaluation
+| Metric | Description |
+|--------|-------------|
+| **RMSE** | Root Mean Squared Error — magnitude of prediction errors |
+| **MAE** | Mean Absolute Error — average absolute deviation |
+| **R²** | Coefficient of Determination — proportion of variance explained |
 
-### Make Predictions
-```python
-import pickle
-import yfinance as yf
+## 📊 Flowchart
 
-# Load models
-with open('models/final_rf.pkl', 'rb') as f:
-    rf = pickle.load(f)
-with open('models/final_scaler.pkl', 'rb') as f:
-    scaler = pickle.load(f)
-
-# Get data and predict
-data = yf.download('TSLA', period='1y')
-# ... feature engineering ...
-X_scaled = scaler.transform(X)
-prediction = rf.predict(X_scaled)
+```
+Data Collection → Data Preprocessing → Feature Extraction
+    → Model Training → Prediction → Model Evaluation → Decision Making
 ```
 
-### Custom Stock
-Edit `config.yaml` (recommended — no code change required):
+## ⚙️ Configuration
+
+Edit `config.yaml` to customize:
 ```yaml
-Ticker: AAPL        # Any supported Yahoo Finance ticker
-StartDate: 2018-01-01
-EndDate: 2024-12-31
-TestSize: 0.20
+Ticker: "RELIANCE.NS"     # NSE stock ticker
+StartDate: "2018-01-01"
+EndDate: "2024-12-31"
+TestSize: 0.20             # 80/20 split
+SequenceLength: 60         # Lookback window
+LSTMUnits: 50             # Units per layer
+Dropout: 0.2              # Regularization
+Epochs: 50                # Training epochs
+BatchSize: 32
+LearningRate: 0.001
 ```
-Then re-run:
-```bash
-python train_final.py
-python evaluate_final.py
-```
 
-To experiment ad‑hoc without retraining you can still load existing models in a script and supply newly engineered features for a different ticker (accuracy will not be valid because models were trained on TSLA distribution).
+## 📚 References
 
-### Run Tests (Verification)
-```bash
-pytest -vv
-```
-All tests should pass (feature integrity + model artifact loading). Include a screenshot or test log in your submission appendix for reproducibility evidence.
-
-### Reproducibility Notes
-- Python version: 3.8+ (tested on 3.11)
-- Determinism: Tree models have fixed `random_state=42`; SMOTE also fixed.
-- Data Source: Live download via `yfinance`; for archival reproducibility, freeze a CSV snapshot of raw OHLCV data used.
-- Environment: Use `requirements.txt`; optionally export full lock file via `pip freeze > requirements_locked.txt`.
-
-### Academic Submission Checklist
-- [x] Clean, minimal repository (no unused notebooks / temp artifacts)
-- [x] Clear README: installation, training, evaluation, usage, tests
-- [x] Config-driven (no hard-coded ticker)
-- [x] Logged training process (`train_final.py` console output)
-- [x] Feature list centralized (`stock_predictor/features.py`)
-- [x] Models + outputs generated (`models/`, `outputs/`)
-- [x] Evaluation figure included (`final_evaluation_comprehensive.png`)
-- [x] Feature importance CSV present
-- [x] Tests pass (`pytest -vv`)
-- [x] Ethical / financial disclaimer
-
-Optional Enhancements (not required for grading): CI workflow, SHAP explainability, CLI wrapper, multi-ticker extension.
-
-## 📊 Top 10 Features by Importance
-
-1. **bb_position** (0.0662) - Bollinger Band position
-2. **volatility_30** (0.0556) - 30-day volatility
-3. **bb_squeeze** (0.0541) - Bollinger Band width
-4. **gap** (0.0522) - Opening gap
-5. **momentum_5** (0.0509) - 5-day momentum
-6. **macd_diff** (0.0495) - MACD histogram
-7. **price_to_sma5** (0.0486) - Price to 5-day SMA ratio
-8. **volume_change_3** (0.0476) - 3-day volume change
-9. **rsi** (0.0473) - Relative Strength Index
-10. **volume_ratio** (0.0466) - Volume to 20-day average
-
-## 🎓 Academic Context
-
-### Research Question
-*Can machine learning ensemble methods predict next-day stock price direction with accuracy exceeding naive baselines?*
-
-### Hypothesis
-Technical indicators contain predictive signals for short-term price movements that can be captured through ensemble learning.
-
-### Results
-✅ **Confirmed:** Ensemble achieves 51.9% accuracy, outperforming:
-- Random baseline (50.0%)
-- Naive baseline (51.3%)
-
-### Discussion
-The modest improvement aligns with the **Efficient Market Hypothesis (EMH)**, which suggests publicly available technical data is quickly incorporated into prices. The near-50% accuracy reflects semi-strong market efficiency where technical analysis provides limited predictive power.
-
-### Key Findings
-1. Bollinger Band position and volatility are most predictive
-2. Short-term momentum (3-5 days) outperforms longer-term
-3. Volume analysis provides significant signal
-4. Monthly performance varies (18%-75%), indicating regime dependency
-5. Model agreement (~75%) suggests consistent pattern capture
-
-### Limitations
-- Single stock (TSLA) - generalization unclear
-- No fundamental or sentiment data
-- Transaction costs not considered
-- Historical patterns may not persist
-
-### Future Work
-- NLP sentiment analysis from news/social media
-- Multi-stock prediction with sector analysis
-- Deep learning (LSTM, Transformers)
-- Reinforcement learning for trading strategies
-- Real-time deployment with live feeds
-
-## 📝 License
-
-MIT License - see [LICENSE](LICENSE) file
-
-## 🙏 Acknowledgments
-
-- **yfinance** - Stock data API
-- **scikit-learn** - Machine learning framework
-- **XGBoost** - Gradient boosting library
-- **Streamlit** - Web application framework
-- **Tesla Inc.** - Data source
-
-## 👨‍💻 Author
-
-**Hardik Kapil**
-- GitHub: [@HardikKapil1](https://github.com/HardikKapil1)
-- Repository: [Stock-Price-Prediction](https://github.com/HardikKapil1/Stock-Price-Prediction)
+1. Sidhu, P., Aggarwal, H., & Lal, M. (2021). Stock Market Prediction Using LSTM. *International Journal of Advanced Research in Science, Communication and Technology.*
+2. Patil, P.P., Khanbare, N., Nadke, K., Gupta, D., & Sahani, D. (2022). Stock Market Prediction using LSTM. *International Journal of Advanced Research in Science, Communication and Technology.*
+3. Sharma, R., Jain, S., Singh, S., & Nitie Ke-rani, M. (2020). Stock Market Prediction Using LSTM. *RealAxis Analytics.*
+4. Lu, Z., Yu, H., Xu, J., Liu, J., & Mo, Y. (2021). Stock Market Analysis and Prediction Using LSTM: A Case Study on Technology Stocks. *Innovations in Applied Engineering and Technology.*
+5. Guar, V. (2023). Stock Market Price Prediction Using LSTM. *International Journal for Research in Applied Science and Engineering Technology.*
+6. Bhatane, P., Barasode, P., & Palaki, P. (2023). Stock Market Prediction Model using LSTM. *International Journal for Research in Applied Science and Engineering Technology.*
+7. Chen, Y. (2021). Stock Market Analysis and Prediction Using LSTM. *BCP Business & Management.*
+8. Chaudhary, R. (2025). Advanced Stock Market Prediction Using Long Short-Term Memory Networks: A Comprehensive Deep Learning Framework.
+9. Sharma, Y., Kumar, A., Dubey, V., & Rai, V. (2023). Stock Price Prediction Using LSTM. *13th International Conference on Computing Communication and Networking Technologies (ICCCNT).*
+10. Shale, A. (2025). Predicting Stock Market Trends Using Deep Long Short-Term Memory Networks. *International Journal of Scientific Research in Engineering and Management.*
 
 ## ⚠️ Disclaimer
 
 **This is an educational project for academic purposes only.**
 
-This system is NOT financial advice. Stock prediction involves substantial risk. The 51.9% accuracy reflects the difficulty of market prediction and should not be used for actual trading without extensive additional research and risk management.
+Stock prediction involves substantial risk. The model's performance reflects the inherent difficulty of market prediction and should NOT be used for actual trading without extensive additional research and risk management. Always consult licensed financial advisors before making investment decisions.
 
-Always consult licensed financial advisors before making investment decisions.
+## 📝 License
 
-## 📞 Support
-
-For questions or issues:
-- Open an [Issue](https://github.com/HardikKapil1/Stock-Price-Prediction/issues)
-- Contact via GitHub
+MIT License — see [LICENSE](LICENSE) file
 
 ---
 
-**⭐ Star this repository if you found it helpful!**
-
-*Final Year Project • Machine Learning • 2024*
+**Final Year Project • 2024-25 • Meerut Institute of Engineering and Technology**
