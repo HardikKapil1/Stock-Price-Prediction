@@ -1,5 +1,19 @@
-# Configuration for stock prediction training
-Ticker: TSLA
-StartDate: 2018-01-01
-EndDate: 2024-12-31
-TestSize: 0.20
+# Configuration for Stock Market Prediction Using LSTM
+# Final Year Project - Matching Research Paper Specifications
+
+# Data Configuration
+Ticker: "RELIANCE.NS"          # NSE stock (Reliance Industries)
+StartDate: "2018-01-01"
+EndDate: "2024-12-31"
+TestSize: 0.20                 # 80/20 train-test split (chronological)
+
+# LSTM Model Configuration (Paper Section III.C)
+SequenceLength: 60             # 60-day lookback window
+LSTMUnits: 50                 # 50 units per LSTM layer (Paper: "50 units each")
+Dropout: 0.2                  # Dropout rate (Paper: "dropout (0.2)")
+NumLayers: 2                  # Stacked LSTM layers (Paper: "two layers")
+
+# Training Configuration (Paper Section III.D)
+Epochs: 50                    # Training epochs
+BatchSize: 32                 # Mini-batch size
+LearningRate: 0.001           # Adam optimizer learning rate
