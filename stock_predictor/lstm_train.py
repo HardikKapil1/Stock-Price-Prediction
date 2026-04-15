@@ -57,7 +57,7 @@ def train_lstm(config: Dict[str, Any]) -> Dict[str, Any]:
     print("Training Pipeline - Final Year Project")
     print("=" * 80)
 
-    # ── Step 1: Data Collection (Paper Section III.A) ──
+    # -- Step 1: Data Collection (Paper Section III.A) --
     logger.info("STEP 1: Data Collection")
     ticker = config['Ticker']
     start = str(config['StartDate'])
@@ -75,35 +75,35 @@ def train_lstm(config: Dict[str, Any]) -> Dict[str, Any]:
     else:
         df = download_stock_data(ticker, start, end)
 
-    print(f"\n📊 Data: {ticker} | {df.index[0].date()} to {df.index[-1].date()} | {len(df)} rows")
+    print(f"\n[DATA] {ticker} | {df.index[0].date()} to {df.index[-1].date()} | {len(df)} rows")
 
-    # ── Step 2: Data Preprocessing (Paper Section III.B) ──
+    # -- Step 2: Data Preprocessing (Paper Section III.B) --
     logger.info("STEP 2: Data Preprocessing")
     df = handle_missing_values(df)
 
     # Extract closing prices (the primary feature for LSTM prediction)
     close_prices = df['Close'].values.astype(float)
-    print(f"📈 Close price range: ₹{close_prices.min():.2f} - ₹{close_prices.max():.2f}")
+    print(f"[PRICE] Close price range: Rs.{close_prices.min():.2f} - Rs.{close_prices.max():.2f}")
 
     # Normalize to [0, 1] using MinMaxScaler
     scaled_data, scaler = normalize_data(
         close_prices,
         scaler_path="models/scaler.pkl"
     )
-    print(f"✅ MinMaxScaler applied | Range: [{scaled_data.min():.4f}, {scaled_data.max():.4f}]")
+    print(f"[OK] MinMaxScaler applied | Range: [{scaled_data.min():.4f}, {scaled_data.max():.4f}]")
 
-    # ── Step 3: Feature Extraction / Sequence Creation ──
+    # -- Step 3: Feature Extraction / Sequence Creation --
     logger.info("STEP 3: Creating time sequences")
     seq_len = config.get('SequenceLength', 60)
     X, y = create_sequences(scaled_data, seq_len=seq_len)
-    print(f"📐 Sequences: {X.shape[0]} samples | Lookback: {seq_len} days | Features: {X.shape[2]}")
+    print(f"[SEQ] Sequences: {X.shape[0]} samples | Lookback: {seq_len} days | Features: {X.shape[2]}")
 
-    # ── Step 4: Train/Test Split (80/20 chronological) ──
+    # -- Step 4: Train/Test Split (80/20 chronological) --
     test_size = float(config.get('TestSize', 0.20))
     X_train, X_test, y_train, y_test = split_data(X, y, test_size=test_size)
-    print(f"📊 Train: {len(X_train)} samples | Test: {len(X_test)} samples")
+    print(f"[SPLIT] Train: {len(X_train)} samples | Test: {len(X_test)} samples")
 
-    # ── Step 5: Model Building (Paper Section III.C) ──
+    # -- Step 5: Model Building (Paper Section III.C) --
     logger.info("STEP 4: Building LSTM model")
     lstm_units = config.get('LSTMUnits', 50)
     dropout_rate = float(config.get('Dropout', 0.2))
@@ -121,16 +121,16 @@ def train_lstm(config: Dict[str, Any]) -> Dict[str, Any]:
     if model is None:
         raise RuntimeError("Failed to build LSTM model. Is TensorFlow installed?")
 
-    print(f"\n🧠 Model: Stacked LSTM ({num_layers} layers x {lstm_units} units)")
+    print(f"\n[MODEL] Stacked LSTM ({num_layers} layers x {lstm_units} units)")
     print(f"   Dropout: {dropout_rate} | Optimizer: Adam (lr={learning_rate})")
     print(f"   Loss: Mean Squared Error (MSE)")
 
-    # ── Step 6: Model Training (Paper Section III.D) ──
+    # -- Step 6: Model Training (Paper Section III.D) --
     logger.info("STEP 5: Training model")
     epochs = config.get('Epochs', 50)
     batch_size = config.get('BatchSize', 32)
 
-    print(f"\n🏋️ Training for {epochs} epochs with batch_size={batch_size}...")
+    print(f"\n[TRAIN] Training for {epochs} epochs with batch_size={batch_size}...")
     print("-" * 80)
 
     history = model.fit(
@@ -141,7 +141,7 @@ def train_lstm(config: Dict[str, Any]) -> Dict[str, Any]:
         verbose=1
     )
 
-    # ── Step 7: Save Artifacts ──
+    # -- Step 7: Save Artifacts --
     logger.info("STEP 6: Saving model and artifacts")
 
     # Save model
@@ -175,7 +175,7 @@ def train_lstm(config: Dict[str, Any]) -> Dict[str, Any]:
         serializable_config = {k: str(v) for k, v in config.items()}
         json.dump(serializable_config, f, indent=2)
 
-    # ── Training Summary ──
+    # -- Training Summary --
     final_train_loss = history.history['loss'][-1]
     final_val_loss = history.history['val_loss'][-1]
     best_val_loss = min(history.history['val_loss'])
@@ -184,13 +184,13 @@ def train_lstm(config: Dict[str, Any]) -> Dict[str, Any]:
     print("\n" + "=" * 80)
     print("TRAINING COMPLETE")
     print("=" * 80)
-    print(f"📉 Final Training Loss (MSE):   {final_train_loss:.6f}")
-    print(f"📉 Final Validation Loss (MSE): {final_val_loss:.6f}")
-    print(f"🏆 Best Validation Loss:        {best_val_loss:.6f} (Epoch {best_epoch})")
-    print(f"\n💾 Saved: {model_path}")
-    print(f"💾 Saved: models/scaler.pkl")
-    print(f"💾 Saved: outputs/training_history.json")
-    print(f"💾 Saved: data/processed/test_data.npz")
+    print(f"  Final Training Loss (MSE):   {final_train_loss:.6f}")
+    print(f"  Final Validation Loss (MSE): {final_val_loss:.6f}")
+    print(f"  Best Validation Loss:        {best_val_loss:.6f} (Epoch {best_epoch})")
+    print(f"\n  Saved: {model_path}")
+    print(f"  Saved: models/scaler.pkl")
+    print(f"  Saved: outputs/training_history.json")
+    print(f"  Saved: data/processed/test_data.npz")
     print("=" * 80)
 
     return {

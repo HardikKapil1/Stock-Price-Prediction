@@ -1,5 +1,5 @@
 """
-Main Training Script — Stock Market Prediction Using LSTM Networks.
+Main Training Script -- Stock Market Prediction Using LSTM Networks.
 
 This script orchestrates the complete training pipeline as described
 in the research paper. Run this first before evaluation.
@@ -21,8 +21,8 @@ def main():
 
     results = train_lstm(config)
 
-    print("\n✨ Training pipeline complete!")
-    print(f"   Next step: python evaluate.py")
+    print("\n>> Training pipeline complete!")
+    print("   Next step: python evaluate.py")
 
 
 if __name__ == '__main__':
