@@ -68,9 +68,9 @@ st.markdown("""
         font-size: 14px;
     }
 
-    .stTabs [data-baseweb="tab-list"] { gap: 4px; }
+    .stTabs [data-baseweb="tab-list"] { gap: 2px; }
     .stTabs [data-baseweb="tab"] {
-        padding: 8px 14px;
+        padding: 8px 10px;
         border-radius: 8px;
         font-weight: 500;
         font-size: 13px;
@@ -177,11 +177,11 @@ with st.sidebar:
     """)
 
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
-    "📊 Market Data",
-    "🧠 Predictions",
-    "📈 Performance",
-    "📉 History",
-    "🏗️ Architecture"
+    "Market Data",
+    "Predictions",
+    "Performance",
+    "History",
+    "Architecture"
 ])
 
 with tab1:
