@@ -179,8 +179,8 @@ with st.sidebar:
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "📊 Market Data",
     "🧠 Predictions",
-    "📈 Model Performance",
-    "📉 Training History",
+    "📈 Performance",
+    "📉 History",
     "🏗️ Architecture"
 ])
 
