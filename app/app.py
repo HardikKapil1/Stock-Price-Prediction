@@ -1,19 +1,5 @@
-"""
-Streamlit Web Application — Stock Market Prediction Using LSTM Networks.
-
-Interactive dashboard for demonstrating the LSTM-based stock price prediction
-model. Features real-time data visualization, model predictions, and
-performance metrics.
-
-Final Year Project - Meerut Institute of Engineering and Technology (MIET)
-
-Usage:
-    streamlit run app/app.py
-"""
-
 import sys
 import os
-# Add project root to path so stock_predictor package is importable
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import streamlit as st
@@ -27,7 +13,6 @@ import yaml
 from pathlib import Path
 import yfinance as yf
 
-# ── Page Configuration ──
 st.set_page_config(
     page_title="Stock Market Prediction | LSTM",
     page_icon="📈",
@@ -35,7 +20,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ── Custom CSS for Professional Appearance ──
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
@@ -84,9 +68,7 @@ st.markdown("""
         font-size: 14px;
     }
 
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 8px;
-    }
+    .stTabs [data-baseweb="tab-list"] { gap: 8px; }
     .stTabs [data-baseweb="tab"] {
         padding: 10px 20px;
         border-radius: 8px;
@@ -110,10 +92,8 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-# ── Helper Functions ──
 @st.cache_data(ttl=3600)
 def load_config():
-    """Load project configuration."""
     config_path = Path(__file__).parent.parent / 'config.yaml'
     if config_path.exists():
         with open(config_path) as f:
@@ -123,7 +103,6 @@ def load_config():
 
 @st.cache_data(ttl=300)
 def fetch_live_data(ticker, period="1y"):
-    """Fetch live stock data from Yahoo Finance."""
     df = yf.download(ticker, period=period, progress=False)
     if isinstance(df.columns, pd.MultiIndex):
         df.columns = df.columns.get_level_values(0)
@@ -131,7 +110,6 @@ def fetch_live_data(ticker, period="1y"):
 
 
 def load_metrics():
-    """Load evaluation metrics."""
     metrics_path = Path(__file__).parent.parent / 'outputs' / 'metrics.json'
     if metrics_path.exists():
         with open(metrics_path) as f:
@@ -140,7 +118,6 @@ def load_metrics():
 
 
 def load_predictions():
-    """Load predictions CSV."""
     pred_path = Path(__file__).parent.parent / 'outputs' / 'predictions.csv'
     if pred_path.exists():
         return pd.read_csv(pred_path)
@@ -148,7 +125,6 @@ def load_predictions():
 
 
 def load_training_history():
-    """Load training history."""
     hist_path = Path(__file__).parent.parent / 'outputs' / 'training_history.json'
     if hist_path.exists():
         with open(hist_path) as f:
@@ -156,7 +132,6 @@ def load_training_history():
     return None
 
 
-# ── Header ──
 st.markdown("""
 <div class="header-container">
     <h1>📈 Stock Market Prediction Using LSTM Networks</h1>
@@ -164,7 +139,6 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# ── Sidebar ──
 with st.sidebar:
     st.markdown("### ⚙️ Configuration")
     config = load_config()
@@ -201,7 +175,6 @@ with st.sidebar:
     *Dept. of Data Science, MIET*
     """)
 
-# ── Main Content — Tabs ──
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "📊 Market Data",
     "🧠 Predictions",
@@ -210,9 +183,6 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "🏗️ Architecture"
 ])
 
-# ═══════════════════════════════════════════════════════════
-# TAB 1: Market Data
-# ═══════════════════════════════════════════════════════════
 with tab1:
     st.markdown("### 📊 Live Market Data")
 
@@ -225,7 +195,6 @@ with tab1:
         if df.empty:
             st.error(f"No data available for {ticker}")
         else:
-            # Current price info
             latest = df.iloc[-1]
             prev = df.iloc[-2] if len(df) > 1 else df.iloc[-1]
             price_change = float(latest['Close']) - float(prev['Close'])
@@ -242,10 +211,8 @@ with tab1:
             with col4:
                 st.metric("Volume", f"{int(latest['Volume']):,}")
 
-            # Candlestick chart
             fig = make_subplots(rows=2, cols=1, shared_xaxes=True,
-                                row_heights=[0.7, 0.3],
-                                vertical_spacing=0.05)
+                                row_heights=[0.7, 0.3], vertical_spacing=0.05)
 
             fig.add_trace(go.Candlestick(
                 x=df.index, open=df['Open'], high=df['High'],
@@ -254,7 +221,6 @@ with tab1:
                 decreasing_line_color='#FF1744'
             ), row=1, col=1)
 
-            # Add Moving Averages
             if len(df) > 20:
                 ma20 = df['Close'].rolling(20).mean()
                 fig.add_trace(go.Scatter(x=df.index, y=ma20, name='SMA 20',
@@ -264,7 +230,6 @@ with tab1:
                 fig.add_trace(go.Scatter(x=df.index, y=ma50, name='SMA 50',
                                          line=dict(color='#2196F3', width=1.5)), row=1, col=1)
 
-            # Volume
             colors = ['#00C853' if c >= o else '#FF1744'
                       for c, o in zip(df['Close'], df['Open'])]
             fig.add_trace(go.Bar(x=df.index, y=df['Volume'], name='Volume',
@@ -284,23 +249,18 @@ with tab1:
 
             st.plotly_chart(fig, use_container_width=True)
 
-            # Data table
             with st.expander("📋 Raw Data"):
                 st.dataframe(df.tail(20).style.format("{:.2f}"), use_container_width=True)
 
     except Exception as e:
         st.error(f"Error fetching data: {e}")
 
-# ═══════════════════════════════════════════════════════════
-# TAB 2: Predictions
-# ═══════════════════════════════════════════════════════════
 with tab2:
     st.markdown("### 🧠 LSTM Predictions — Actual vs Predicted")
 
     predictions = load_predictions()
 
     if predictions is not None:
-        # Actual vs Predicted chart
         fig = go.Figure()
 
         if 'Date' in predictions.columns:
@@ -330,7 +290,6 @@ with tab2:
         )
         st.plotly_chart(fig, use_container_width=True)
 
-        # Error analysis
         col1, col2 = st.columns(2)
         with col1:
             st.markdown("#### Error Distribution")
@@ -347,7 +306,6 @@ with tab2:
                                       title='Predicted vs Actual Close Price',
                                       template='plotly_dark',
                                       color_discrete_sequence=['#4CAF50'])
-            # Add diagonal line
             min_val = min(predictions['Actual_Close'].min(), predictions['Predicted_Close'].min())
             max_val = max(predictions['Actual_Close'].max(), predictions['Predicted_Close'].max())
             fig_scatter.add_shape(type='line', x0=min_val, y0=min_val,
@@ -355,7 +313,6 @@ with tab2:
                                    line=dict(color='red', dash='dash'))
             st.plotly_chart(fig_scatter, use_container_width=True)
 
-        # Prediction table
         with st.expander("📋 Prediction Data"):
             st.dataframe(predictions.style.format({
                 'Actual_Close': '₹{:.2f}',
@@ -366,16 +323,12 @@ with tab2:
     else:
         st.info("⚠️ No predictions available. Run `python train.py` and `python evaluate.py` first.")
 
-# ═══════════════════════════════════════════════════════════
-# TAB 3: Model Performance
-# ═══════════════════════════════════════════════════════════
 with tab3:
     st.markdown("### 📈 Model Performance — Evaluation Metrics")
 
     metrics = load_metrics()
 
     if metrics is not None:
-        # Key metrics cards
         col1, col2, col3 = st.columns(3)
         with col1:
             st.markdown(f"""
@@ -401,7 +354,6 @@ with tab3:
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # Train vs Test comparison
         col1, col2 = st.columns(2)
         with col1:
             st.markdown("#### Training Set Metrics")
@@ -412,8 +364,7 @@ with tab3:
                 text=[f"₹{metrics['train_rmse']:.2f}", f"₹{metrics['train_mae']:.2f}"],
                 textposition='auto'
             )])
-            fig_train.update_layout(template='plotly_dark', height=350,
-                                     title="Training Error Metrics")
+            fig_train.update_layout(template='plotly_dark', height=350, title="Training Error Metrics")
             st.plotly_chart(fig_train, use_container_width=True)
 
         with col2:
@@ -425,11 +376,9 @@ with tab3:
                 text=[f"₹{metrics['test_rmse']:.2f}", f"₹{metrics['test_mae']:.2f}"],
                 textposition='auto'
             )])
-            fig_test.update_layout(template='plotly_dark', height=350,
-                                    title="Test Error Metrics")
+            fig_test.update_layout(template='plotly_dark', height=350, title="Test Error Metrics")
             st.plotly_chart(fig_test, use_container_width=True)
 
-        # R² gauge
         st.markdown("#### R² Score (Coefficient of Determination)")
         fig_gauge = go.Figure(go.Indicator(
             mode="gauge+number+delta",
@@ -454,7 +403,6 @@ with tab3:
         fig_gauge.update_layout(template='plotly_dark', height=350)
         st.plotly_chart(fig_gauge, use_container_width=True)
 
-        # Detailed metrics table
         with st.expander("📋 Detailed Metrics"):
             metrics_df = pd.DataFrame({
                 'Metric': ['RMSE', 'MAE', 'R²', 'RMSE', 'MAE', 'R²'],
@@ -468,9 +416,6 @@ with tab3:
     else:
         st.info("⚠️ No metrics available. Run `python train.py` and `python evaluate.py` first.")
 
-# ═══════════════════════════════════════════════════════════
-# TAB 4: Training History
-# ═══════════════════════════════════════════════════════════
 with tab4:
     st.markdown("### 📉 Training History — Loss Curves")
 
@@ -506,16 +451,15 @@ with tab4:
         )
 
         fig.update_layout(
-            title='Training & Validation Loss Over Epochs (MSE)',
+            title='Training & Validation Loss (MSE)',
             xaxis_title='Epoch',
-            yaxis_title='Mean Squared Error (MSE)',
+            yaxis_title='MSE',
             template='plotly_dark',
             height=500,
             legend=dict(orientation="h", yanchor="bottom", y=1.02)
         )
         st.plotly_chart(fig, use_container_width=True)
 
-        # Training stats
         col1, col2, col3 = st.columns(3)
         with col1:
             st.metric("Total Epochs", len(history['loss']))
@@ -524,7 +468,6 @@ with tab4:
         with col3:
             st.metric("Best Val Loss", f"{best_loss:.6f}")
 
-        # Loss table
         with st.expander("📋 Epoch-by-Epoch Loss"):
             loss_df = pd.DataFrame({
                 'Epoch': epochs,
@@ -538,18 +481,14 @@ with tab4:
     else:
         st.info("⚠️ No training history. Run `python train.py` first.")
 
-# ═══════════════════════════════════════════════════════════
-# TAB 5: Architecture
-# ═══════════════════════════════════════════════════════════
 with tab5:
     st.markdown("### 🏗️ LSTM Model Architecture")
 
     st.markdown("""
     <div class="info-box">
-    <strong>Paper Section III.C — LSTM Model Architecture:</strong><br>
-    "The model will consist of stacked LSTM with two layers (50 units each) and
-    dropout (0.2). The LSTM gates (input, forget, output) allow accurate prediction
-    of the financial time series by modeling nonlinear patterns and long-term dependencies."
+    The model uses a stacked LSTM architecture with two layers (50 units each) and
+    dropout (0.2) to prevent overfitting. The LSTM gates model long-term dependencies
+    in financial time series data.
     </div>
     """, unsafe_allow_html=True)
 
@@ -557,8 +496,6 @@ with tab5:
 
     with col1:
         st.markdown("#### Model Architecture Diagram")
-
-        # Architecture as a styled diagram
         st.markdown("""
         ```
         ┌─────────────────────────────────────────────┐
@@ -573,7 +510,6 @@ with tab5:
                            │
         ┌──────────────────▼──────────────────────────┐
         │           Dropout (0.2)                      │
-        │         20% neurons randomly dropped          │
         └──────────────────┬──────────────────────────┘
                            │
         ┌──────────────────▼──────────────────────────┐
@@ -583,12 +519,10 @@ with tab5:
                            │
         ┌──────────────────▼──────────────────────────┐
         │           Dropout (0.2)                      │
-        │         20% neurons randomly dropped          │
         └──────────────────┬──────────────────────────┘
                            │
         ┌──────────────────▼──────────────────────────┐
-        │           Dense Layer                        │
-        │         (1 neuron — price output)             │
+        │           Dense Layer (1 neuron)              │
         └──────────────────┬──────────────────────────┘
                            │
                     Predicted Price
@@ -614,20 +548,19 @@ with tab5:
         st.dataframe(params_df, use_container_width=True, hide_index=True)
 
     st.markdown("---")
-
-    st.markdown("#### 🔄 Project Flowchart (Paper Fig. 1)")
+    st.markdown("#### 🔄 Pipeline")
     st.markdown("""
     ```
     ┌──────────────────┐
-    │  Data Collection │  ← NSE Historical Stock Data
+    │  Data Collection │  ← NSE Historical Stock Data (Yahoo Finance)
     └────────┬─────────┘
              │
     ┌────────▼─────────┐
-    │ Data Preprocessing│  ← Missing Values, MinMaxScaler
+    │  Preprocessing   │  ← Missing Values, MinMaxScaler
     └────────┬─────────┘
              │
     ┌────────▼─────────┐
-    │ Feature Extraction│  ← Time Sequence Creation (60-day windows)
+    │    Sequences     │  ← 60-day sliding windows
     └────────┬─────────┘
              │
     ┌────────▼─────────┐
@@ -635,20 +568,19 @@ with tab5:
     └────────┬─────────┘
              │
     ┌────────▼─────────┐
-    │    Prediction     │  ← Close Price Forecasting
+    │    Prediction    │  ← Close Price Forecasting
     └────────┬─────────┘
              │
     ┌────────▼─────────┐
-    │ Model Evaluation  │  ← RMSE, MAE, R²
+    │   Evaluation     │  ← RMSE, MAE, R²
     └────────┬─────────┘
              │
     ┌────────▼─────────┐
-    │ Decision Making   │  ← This Dashboard!
+    │   This Dashboard │
     └──────────────────┘
     ```
     """)
 
-# ── Footer ──
 st.markdown("---")
 st.markdown("""
 <div style="text-align: center; color: #888; font-size: 13px;">
