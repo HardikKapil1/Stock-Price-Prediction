@@ -208,4 +208,4 @@ MIT License — see [LICENSE](LICENSE) file
 
 ---
 
-**Final Year Project • 2024-25 • Meerut Institute of Engineering and Technology**
+**Final Year Project • 2025-26 • Meerut Institute of Engineering and Technology**
