@@ -1,0 +1,13 @@
+{
+  "Ticker": "RELIANCE.NS",
+  "StartDate": "2018-01-01",
+  "EndDate": "2024-12-31",
+  "TestSize": "0.2",
+  "SequenceLength": "60",
+  "LSTMUnits": "50",
+  "Dropout": "0.2",
+  "NumLayers": "2",
+  "Epochs": "50",
+  "BatchSize": "32",
+  "LearningRate": "0.001"
+}
