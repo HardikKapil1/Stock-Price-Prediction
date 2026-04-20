@@ -68,11 +68,30 @@ st.markdown("""
         font-size: 14px;
     }
 
-    .stTabs [data-baseweb="tab-list"] { gap: 8px; }
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        scrollbar-width: thin;
+        scrollbar-color: #533483 transparent;
+        padding-bottom: 4px;
+    }
+    .stTabs [data-baseweb="tab-list"]::-webkit-scrollbar {
+        height: 4px;
+    }
+    .stTabs [data-baseweb="tab-list"]::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .stTabs [data-baseweb="tab-list"]::-webkit-scrollbar-thumb {
+        background-color: #533483;
+        border-radius: 4px;
+    }
     .stTabs [data-baseweb="tab"] {
         padding: 10px 20px;
         border-radius: 8px;
         font-weight: 500;
+        white-space: nowrap;
+        flex-shrink: 0;
     }
 
     .info-box {
