@@ -68,38 +68,12 @@ st.markdown("""
         font-size: 14px;
     }
 
-    /* Tab container — allow horizontal scroll */
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 8px;
-        overflow-x: auto !important;
-        flex-wrap: nowrap !important;
-        scrollbar-width: thin;
-        scrollbar-color: #533483 transparent;
-        padding-bottom: 6px;
-    }
-    /* Remove overflow clipping from Streamlit's inner tab wrappers */
-    .stTabs > div,
-    .stTabs > div > div {
-        overflow: visible !important;
-    }
-    /* Scrollbar styling (webkit) */
-    .stTabs [data-baseweb="tab-list"]::-webkit-scrollbar { height: 4px; }
-    .stTabs [data-baseweb="tab-list"]::-webkit-scrollbar-track { background: transparent; }
-    .stTabs [data-baseweb="tab-list"]::-webkit-scrollbar-thumb {
-        background-color: #533483;
-        border-radius: 4px;
-    }
-    /* Hide Streamlit's built-in left/right scroll arrows */
-    .stTabs [data-baseweb="tab-highlight"],
-    button[data-baseweb="tab-border"] { display: none !important; }
-    /* Each tab: no shrink, no wrap */
+    .stTabs [data-baseweb="tab-list"] { gap: 4px; }
     .stTabs [data-baseweb="tab"] {
-        padding: 10px 20px;
+        padding: 8px 14px;
         border-radius: 8px;
         font-weight: 500;
-        white-space: nowrap !important;
-        flex-shrink: 0 !important;
-        min-width: fit-content !important;
+        font-size: 13px;
     }
 
     .info-box {
