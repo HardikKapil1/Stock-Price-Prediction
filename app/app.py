@@ -248,10 +248,10 @@ with tab1:
             fig.update_yaxes(title_text="Price (₹)", row=1, col=1)
             fig.update_yaxes(title_text="Volume", row=2, col=1)
 
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
 
             with st.expander("📋 Raw Data"):
-                st.dataframe(df.tail(20).style.format("{:.2f}"), use_container_width=True)
+                st.dataframe(df.tail(20).style.format("{:.2f}"), width='stretch')
 
     except Exception as e:
         st.error(f"Error fetching data: {e}")
@@ -289,7 +289,7 @@ with tab2:
             legend=dict(orientation="h", yanchor="bottom", y=1.02),
             margin=dict(t=60, b=30)
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
 
         col1, col2 = st.columns(2)
         with col1:
@@ -299,7 +299,7 @@ with tab2:
                                     template='plotly_dark',
                                     color_discrete_sequence=['#9C27B0'])
             fig_err.add_vline(x=0, line_dash="dash", line_color="red")
-            st.plotly_chart(fig_err, use_container_width=True)
+            st.plotly_chart(fig_err, width='stretch')
 
         with col2:
             st.markdown("#### Scatter: Predicted vs Actual")
@@ -312,7 +312,7 @@ with tab2:
             fig_scatter.add_shape(type='line', x0=min_val, y0=min_val,
                                    x1=max_val, y1=max_val,
                                    line=dict(color='red', dash='dash'))
-            st.plotly_chart(fig_scatter, use_container_width=True)
+            st.plotly_chart(fig_scatter, width='stretch')
 
         with st.expander("📋 Prediction Data"):
             st.dataframe(predictions.style.format({
@@ -320,7 +320,7 @@ with tab2:
                 'Predicted_Close': '₹{:.2f}',
                 'Error': '₹{:.2f}',
                 'Abs_Error': '₹{:.2f}'
-            }), use_container_width=True)
+            }), width='stretch')
     else:
         st.info("⚠️ No predictions available. Run `python train.py` and `python evaluate.py` first.")
 
@@ -366,7 +366,7 @@ with tab3:
                 textposition='auto'
             )])
             fig_train.update_layout(template='plotly_dark', height=350, title="Training Error Metrics")
-            st.plotly_chart(fig_train, use_container_width=True)
+            st.plotly_chart(fig_train, width='stretch')
 
         with col2:
             st.markdown("#### Test Set Metrics")
@@ -378,7 +378,7 @@ with tab3:
                 textposition='auto'
             )])
             fig_test.update_layout(template='plotly_dark', height=350, title="Test Error Metrics")
-            st.plotly_chart(fig_test, use_container_width=True)
+            st.plotly_chart(fig_test, width='stretch')
 
         st.markdown("#### R² Score (Coefficient of Determination)")
         fig_gauge = go.Figure(go.Indicator(
@@ -402,7 +402,7 @@ with tab3:
             }
         ))
         fig_gauge.update_layout(template='plotly_dark', height=350)
-        st.plotly_chart(fig_gauge, use_container_width=True)
+        st.plotly_chart(fig_gauge, width='stretch')
 
         with st.expander("📋 Detailed Metrics"):
             metrics_df = pd.DataFrame({
@@ -413,7 +413,7 @@ with tab3:
                     metrics['train_rmse'], metrics['train_mae'], metrics['train_r2']
                 ]
             })
-            st.dataframe(metrics_df.style.format({'Value': '{:.4f}'}), use_container_width=True)
+            st.dataframe(metrics_df.style.format({'Value': '{:.4f}'}), width='stretch')
     else:
         st.info("⚠️ No metrics available. Run `python train.py` and `python evaluate.py` first.")
 
@@ -459,7 +459,7 @@ with tab4:
             height=500,
             legend=dict(orientation="h", yanchor="bottom", y=1.02)
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
 
         col1, col2, col3 = st.columns(3)
         with col1:
@@ -478,7 +478,7 @@ with tab4:
             st.dataframe(loss_df.style.format({
                 'Training Loss': '{:.6f}',
                 'Validation Loss': '{:.6f}'
-            }), use_container_width=True)
+            }), width='stretch')
     else:
         st.info("⚠️ No training history. Run `python train.py` first.")
 
@@ -546,7 +546,7 @@ with tab5:
                 '80/20'
             ]
         })
-        st.dataframe(params_df, use_container_width=True, hide_index=True)
+        st.dataframe(params_df, width='stretch', hide_index=True)
 
     st.markdown("---")
     st.markdown("#### 🔄 Pipeline")
