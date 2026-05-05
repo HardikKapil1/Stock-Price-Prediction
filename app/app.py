@@ -12,6 +12,8 @@ import json
 import yaml
 from pathlib import Path
 import yfinance as yf
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 
 st.set_page_config(
     page_title="Stock Market Prediction | LSTM",
@@ -110,27 +112,94 @@ def fetch_live_data(ticker, period="1y"):
     return df
 
 
-def load_metrics():
-    metrics_path = Path(__file__).parent.parent / 'outputs' / 'metrics.json'
-    if metrics_path.exists():
-        with open(metrics_path) as f:
-            return json.load(f)
-    return None
-
-
-def load_predictions():
-    pred_path = Path(__file__).parent.parent / 'outputs' / 'predictions.csv'
-    if pred_path.exists():
-        return pd.read_csv(pred_path)
-    return None
-
-
 def load_training_history():
     hist_path = Path(__file__).parent.parent / 'outputs' / 'training_history.json'
     if hist_path.exists():
         with open(hist_path) as f:
             return json.load(f)
     return None
+
+
+@st.cache_data(ttl=1800, show_spinner=False)
+def run_inference_for_ticker(ticker: str, seq_len: int = 60):
+    """
+    Fetch data for `ticker`, fit a fresh scaler, run the saved LSTM model
+    on the test split, and return (predictions_df, metrics_dict).
+    Cached per ticker so switching back is instant.
+    """
+    model_path = Path(__file__).parent.parent / 'models' / 'lstm_model.keras'
+    if not model_path.exists():
+        return None, None
+
+    try:
+        from tensorflow.keras.models import load_model as _load_keras
+        model = _load_keras(str(model_path))
+    except Exception:
+        return None, None
+
+    # Fetch at least 5 years so there's enough history for 60-day sequences
+    df = yf.download(ticker, period="5y", progress=False)
+    if isinstance(df.columns, pd.MultiIndex):
+        df.columns = df.columns.get_level_values(0)
+    if df.empty or len(df) < seq_len + 10:
+        return None, None
+
+    df = df.ffill().dropna()
+    close_prices = df['Close'].values.reshape(-1, 1)
+    dates = df.index
+
+    # Fit a fresh scaler on this ticker's data
+    scaler = MinMaxScaler(feature_range=(0, 1))
+    scaled = scaler.fit_transform(close_prices).flatten()
+
+    # Build sequences
+    X, y = [], []
+    for i in range(seq_len, len(scaled)):
+        X.append(scaled[i - seq_len:i])
+        y.append(scaled[i])
+    X = np.array(X).reshape(-1, seq_len, 1)
+    y = np.array(y)
+    seq_dates = dates[seq_len:]
+
+    # 80/20 chronological split
+    split = int(len(X) * 0.80)
+    X_train, X_test = X[:split], X[split:]
+    y_train, y_test = y[:split], y[split:]
+    test_dates = seq_dates[split:]
+
+    # Inference
+    y_pred_scaled = model.predict(X_test, verbose=0).flatten()
+    y_train_pred_scaled = model.predict(X_train, verbose=0).flatten()
+
+    y_actual = scaler.inverse_transform(y_test.reshape(-1, 1)).flatten()
+    y_pred   = scaler.inverse_transform(y_pred_scaled.reshape(-1, 1)).flatten()
+    y_tr_act = scaler.inverse_transform(y_train.reshape(-1, 1)).flatten()
+    y_tr_pred= scaler.inverse_transform(y_train_pred_scaled.reshape(-1, 1)).flatten()
+
+    # Metrics
+    rmse  = float(np.sqrt(mean_squared_error(y_actual, y_pred)))
+    mae   = float(mean_absolute_error(y_actual, y_pred))
+    r2    = float(r2_score(y_actual, y_pred))
+    t_rmse= float(np.sqrt(mean_squared_error(y_tr_act, y_tr_pred)))
+    t_mae = float(mean_absolute_error(y_tr_act, y_tr_pred))
+    t_r2  = float(r2_score(y_tr_act, y_tr_pred))
+
+    metrics = {
+        'test_rmse': rmse, 'test_mae': mae, 'test_r2': r2,
+        'train_rmse': t_rmse, 'train_mae': t_mae, 'train_r2': t_r2,
+        'test_samples': int(len(y_test)),
+        'train_samples': int(len(y_train)),
+    }
+
+    pred_df = pd.DataFrame({
+        'Date': test_dates,
+        'Actual_Close': y_actual,
+        'Predicted_Close': y_pred,
+        'Error': y_actual - y_pred,
+        'Abs_Error': np.abs(y_actual - y_pred),
+    })
+
+    return pred_df, metrics
 
 
 st.markdown("""
@@ -258,16 +327,14 @@ with tab1:
 
 with tab2:
     st.markdown("### 🧠 LSTM Predictions — Actual vs Predicted")
+    st.caption(f"Running inference on **{ticker}** using the saved LSTM model...")
 
-    predictions = load_predictions()
+    with st.spinner(f"Running LSTM inference for {ticker}…"):
+        predictions, _ = run_inference_for_ticker(ticker)
 
     if predictions is not None:
         fig = go.Figure()
-
-        if 'Date' in predictions.columns:
-            x_axis = pd.to_datetime(predictions['Date'])
-        else:
-            x_axis = list(range(len(predictions)))
+        x_axis = pd.to_datetime(predictions['Date'])
 
         fig.add_trace(go.Scatter(
             x=x_axis, y=predictions['Actual_Close'],
@@ -281,11 +348,11 @@ with tab2:
         ))
 
         fig.update_layout(
-            title='Stock Close Price — Actual vs LSTM Predicted',
+            title=f'{ticker} — Actual vs LSTM Predicted Close Price',
             template='plotly_dark',
             height=500,
             xaxis_title='Date',
-            yaxis_title='Price (₹)',
+            yaxis_title='Price',
             legend=dict(orientation="h", yanchor="bottom", y=1.02),
             margin=dict(t=60, b=30)
         )
@@ -315,19 +382,18 @@ with tab2:
             st.plotly_chart(fig_scatter, width='stretch')
 
         with st.expander("📋 Prediction Data"):
-            st.dataframe(predictions.style.format({
-                'Actual_Close': '₹{:.2f}',
-                'Predicted_Close': '₹{:.2f}',
-                'Error': '₹{:.2f}',
-                'Abs_Error': '₹{:.2f}'
-            }), width='stretch')
+            fmt = {'Actual_Close': '{:.2f}', 'Predicted_Close': '{:.2f}',
+                   'Error': '{:.2f}', 'Abs_Error': '{:.2f}'}
+            st.dataframe(predictions.style.format(fmt), width='stretch')
     else:
-        st.info("⚠️ No predictions available. Run `python train.py` and `python evaluate.py` first.")
+        st.warning(f"⚠️ Could not run inference for **{ticker}**. Check that the model file exists at `models/lstm_model.keras` and the ticker symbol is valid.")
 
 with tab3:
     st.markdown("### 📈 Model Performance — Evaluation Metrics")
+    st.caption(f"Metrics computed from LSTM inference on **{ticker}** (test split)")
 
-    metrics = load_metrics()
+    with st.spinner(f"Computing metrics for {ticker}…"):
+        _, metrics = run_inference_for_ticker(ticker)
 
     if metrics is not None:
         col1, col2, col3 = st.columns(3)
@@ -419,6 +485,18 @@ with tab3:
 
 with tab4:
     st.markdown("### 📉 Training History — Loss Curves")
+
+    trained_on = (config.get('Ticker', 'RELIANCE.NS') if config else 'RELIANCE.NS')
+    st.markdown(f"""
+    <div class="info-box">
+    ℹ️ <strong>Why is this tab static?</strong><br>
+    Training loss curves are recorded <em>during model training</em> — a process that takes several
+    minutes and only runs once (via <code>python train.py</code>). The model was originally trained on
+    <strong>{trained_on}</strong> data. When you switch tickers above, the <em>Predictions</em> and
+    <em>Performance</em> tabs re-run live inference using those trained weights, but the training
+    history itself doesn't change — it always reflects the original training session.
+    </div>
+    """, unsafe_allow_html=True)
 
     history = load_training_history()
 
