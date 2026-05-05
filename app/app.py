@@ -201,10 +201,29 @@ def run_inference_for_ticker(ticker: str, seq_len: int = 60):
             'Abs_Error': np.abs(y_actual - y_pred),
         })
 
-        return pred_df, metrics, None
+        # Future Forecasting (Next 30 Days)
+        future_predictions = []
+        current_seq = X_test[-1].copy()  # Start with the very last sequence of actual data
+        for _ in range(30):
+            # Predict the next day (scaled)
+            next_pred_scaled = model.predict(current_seq.reshape(1, seq_len, 1), verbose=0)[0, 0]
+            future_predictions.append(next_pred_scaled)
+            # Update the sequence: drop the oldest day, append the new prediction
+            current_seq = np.append(current_seq[1:], [[next_pred_scaled]], axis=0)
+            
+        future_pred_actual = scaler.inverse_transform(np.array(future_predictions).reshape(-1, 1)).flatten()
+        last_date = pd.to_datetime(test_dates[-1])
+        future_dates = pd.date_range(start=last_date + pd.Timedelta(days=1), periods=30, freq='B') # Business days
+        
+        future_df = pd.DataFrame({
+            'Date': future_dates,
+            'Future_Predicted_Close': future_pred_actual
+        })
+
+        return pred_df, metrics, future_df, None
 
     except Exception as e:
-        return None, None, f"Inference error: {e}"
+        return None, None, None, f"Inference error: {e}"
 
 
 st.markdown("""
@@ -334,8 +353,8 @@ with tab2:
     st.markdown("### 🧠 LSTM Predictions — Actual vs Predicted")
     st.caption(f"Running inference on **{ticker}** using the saved LSTM model...")
 
-    with st.spinner(f"Running LSTM inference for {ticker}…"):
-        predictions, _, infer_err = run_inference_for_ticker(ticker)
+    with st.spinner(f"Running LSTM inference and Future Forecasting for {ticker}…"):
+        predictions, _, future_df, infer_err = run_inference_for_ticker(ticker)
 
     if predictions is not None:
         fig = go.Figure()
@@ -348,12 +367,19 @@ with tab2:
         ))
         fig.add_trace(go.Scatter(
             x=x_axis, y=predictions['Predicted_Close'],
-            name='Predicted Close Price', mode='lines',
+            name='Test Predictions', mode='lines',
             line=dict(color='#FF5722', width=2, dash='dash')
         ))
+        
+        if future_df is not None:
+            fig.add_trace(go.Scatter(
+                x=future_df['Date'], y=future_df['Future_Predicted_Close'],
+                name='Future 30-Day Forecast', mode='lines',
+                line=dict(color='#4CAF50', width=3, dash='dot')
+            ))
 
         fig.update_layout(
-            title=f'{ticker} — Actual vs LSTM Predicted Close Price',
+            title=f'{ticker} — Actual vs Test Predictions & Future Forecast',
             template='plotly_dark',
             height=500,
             xaxis_title='Date',
@@ -399,7 +425,7 @@ with tab3:
     st.caption(f"Metrics computed from LSTM inference on **{ticker}** (test split)")
 
     with st.spinner(f"Computing metrics for {ticker}…"):
-        _, metrics, infer_err = run_inference_for_ticker(ticker)
+        _, metrics, _, infer_err = run_inference_for_ticker(ticker)
 
     if metrics is not None:
         col1, col2, col3 = st.columns(3)
