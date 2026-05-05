@@ -124,19 +124,19 @@ def load_training_history():
 def run_inference_for_ticker(ticker: str, seq_len: int = 60):
     """
     Fetch data for `ticker`, fit a fresh scaler, run the saved LSTM model
-    on the test split, and return (predictions_df, metrics_dict, error_str).
+    on the test split, and return (predictions_df, metrics_dict, future_df, error_str).
     error_str is None on success, or a message string on failure.
     Cached per ticker so switching back is instant.
     """
     model_path = Path(__file__).parent.parent / 'models' / 'lstm_model.keras'
     if not model_path.exists():
-        return None, None, f"Model file not found at: {model_path}"
+        return None, None, None, f"Model file not found at: {model_path}"
 
     try:
         from tensorflow.keras.models import load_model as _load_keras
         model = _load_keras(str(model_path))
     except Exception as e:
-        return None, None, f"TensorFlow error: {e}"
+        return None, None, None, f"TensorFlow error: {e}"
 
     try:
         # Fetch at least 5 years so there's enough history for 60-day sequences
@@ -144,7 +144,7 @@ def run_inference_for_ticker(ticker: str, seq_len: int = 60):
         if isinstance(df.columns, pd.MultiIndex):
             df.columns = df.columns.get_level_values(0)
         if df.empty or len(df) < seq_len + 10:
-            return None, None, f"Not enough data for ticker '{ticker}'. Is the symbol correct?"
+            return None, None, None, f"Not enough data for ticker '{ticker}'. Is the symbol correct?"
 
         df = df.ffill().dropna()
         close_prices = df['Close'].values.reshape(-1, 1)
